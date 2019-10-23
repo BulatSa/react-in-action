@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>React</title>
+	<script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+	<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+	<script src="https://unpkg.com/prop-types@15.6/prop-types.js"></script>
+
+	<!-- Не используйте это в production -->
+	<script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+
+	<style>
+		.red {
+			color: red;
+		}
+
+		.none {
+			display: none;
+		}
+
+		body {
+			background: rgba(0, 102, 255, 0.38);
+			font-family: sans-serif;
+		}
+
+		p {
+			margin: 0 0 5px;
+		}
+
+		.article {
+			background: #FFF;
+			border: 1px solid rgba(0, 89, 181, 0.82);
+			width: 600px;
+			margin: 0 0 5px;
+			box-shadow: 2px 2px 5px -1px rgb(0, 81, 202);
+			padding: 3px 5px;
+		}
+
+		.news_author {
+			text-decoration: underline;
+			color: #007DDC;
+		}
+
+		.news_count {
+			margin: 10px 0 0 0;
+			display: block;
+		}
+
+		.add {
+			margin: 0 5px 5px 0;
+			width: 210px;
+			border: 1px dashed rgba(0, 89, 181, 0.82);
+			padding: 5px;
+		}
+
+		.add_author, .add_text, .add_btn, .add_checkrule {
+			display: block;
+			margin: 0 0 5px 0;
+			padding: 5px;
+			width: 94%;
+			border: 1px solid rgba(0, 89, 181, 0.82);
+		}
+
+		.add_checkrule {
+			border: none;
+			font-size: 12px;
+		}
+
+		.add_btn {
+			box-sizing: content-box;
+			color: #FFF;
+			text-transform: uppercase;
+			background: #007DDC;
+		}
+
+		.add_btn:disabled {
+			background: #CCC;
+			color: #999;
+		}
+	</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+
+	const myNews = [
+		{
+			id: 1,
+			author: 'Sasha Peckin',
+			text: 'In saturday, of four november',
+			bigText: 'Lorem ipsume dolor Amigos 1'
+		},
+		{
+			id: 2,
+			author: 'Prosto Vasya',
+			text: 'I think $ must cost 35 roubles!',
+			bigText: 'Lorem ipsume dolor Amigos 2'
+		},
+		{
+			id: 3,
+			author: 'Max Frontender',
+			text: 'After 2 years $ doesn"t cost 35 roubles',
+			bigText: 'Lorem ipsume dolor Amigos 3'
+		},
+		{
+			id: 4,
+			author: 'Wash Post',
+			text: 'Without registration and SMS, enter to our site bulatsa.ru',
+			bigText: 'Lorem ipsume dolor Amigos 4'
+		}
+	];
+
+	class News extends React.Component {
+		renderNews = () => {
+			const {data} = this.props;
+			let newsTemplate = null;
+
+			if (data.length) {
+				newsTemplate = data.map(function (item) {
+					return <Article key={item.id} data={item}/>
+				});
+			} else {
+				newsTemplate = <p>We have no news</p>
+			}
+
+			return newsTemplate;
+		};
+
+		render() {
+			const {data} = this.props;
+
+			return (
+				<div className="news">
+					{this.renderNews()}
+					{
+						data.length ? <strong className="news_count">Всего новостей: {data.length}</strong> : null
+					}
+				</div>
+			)
+		};
+	}
+
+	News.propTypes = {
+		data: PropTypes.array.isRequired
+	};
+
+	class Article extends React.Component {
+		state = {
+			visible: false
+		};
+
+		handleReadMoreClick = (e) => {
+			e.preventDefault();
+			this.setState({visible: true});
+		};
+
+		render() {
+			const {author, text, bigText} = this.props.data;
+			const {visible} = this.state;
+			return (
+				<div className="article">
+					<p className="news_author">{author}</p>
+					<p className="news_text">{text}</p>
+					{
+						visible ? <p className="news_big-text">{bigText}</p> : <a href="#" className="news_readmore" onClick={this.handleReadMoreClick}>More</a>
+					}
+				</div>
+			);
+		}
+	}
+
+	Article.propTypes = {
+		data: PropTypes.shape({
+			id: PropTypes.number.isRequired,
+			author: PropTypes.string.isRequired,
+			text: PropTypes.string.isRequired,
+			bigText: PropTypes.string.isRequired
+		})
+	};
+
+	class Add extends React.Component {
+		state = {
+			inputValue: '',
+			textareaValue: '',
+			textareaFullValue: '',
+			checkValue: false
+		};
+
+		onChangeInput = (e) => {
+			const {id, value} = e.currentTarget;
+			this.setState({
+				[id]: value
+			})
+		};
+
+		onClickButton = (e) => {
+			e.preventDefault();
+			const {inputValue, textareaValue, textareaFullValue} = this.state;
+			this.props.onAddNews({
+				id: +new Date(),
+				author: inputValue,
+				text: textareaValue,
+				bigText: textareaFullValue});
+		};
+
+		onChangeCheckbox = (e) => {
+			this.setState({
+				checkValue: e.currentTarget.checked
+			});
+		};
+
+		validateForm = () => {
+			const {inputValue, textareaValue, textareaFullValue, checkValue} = this.state;
+
+			if (inputValue.trim() && textareaValue.trim() && checkValue && textareaFullValue) {
+				return true;
+			} else {
+				return false;
+			}
+		};
+
+		render() {
+			const {inputValue, textareaValue, textareaFullValue} = this.state;
+
+			return(
+				<form className="add">
+					<input
+						id="inputValue"
+						className="add_author"
+						type="text"
+						placeholder="Input your value"
+						onChange={this.onChangeInput}
+						value={inputValue}
+					/>
+					<textarea
+						id="textareaValue"
+						className="add_text"
+						placeholder="Text of Preview"
+						onChange={this.onChangeInput}
+						value={textareaValue}
+					/>
+					<textarea
+						id="textareaFullValue"
+						className="add_text"
+						placeholder="Text of Full News"
+						onChange={this.onChangeInput}
+						value={textareaFullValue}
+					/>
+					<label className="add_checkrule">
+						<input
+							type="checkbox"
+							onChange={this.onChangeCheckbox}
+						/>I agree with rules
+					</label>
+					<button
+						className="add_btn"
+						onClick={this.onClickButton}
+						disabled={!this.validateForm()}
+					>Alert value</button>
+				</form>
+			);
+		}
+	}
+
+	Add.PropTypes = {
+		onAddNews: PropTypes.func.isRequired
+	};
+
+	class App extends React.Component {
+		state = {
+			news: myNews
+		};
+
+		onAddNews = (data) => {
+			const nextNews = [data, ...this.state.news];
+			this.setState({news: nextNews});
+		};
+
+		render() {
+			return (
+				<React.Fragment>
+					<Add onAddNews={this.onAddNews}/>
+					<h3>Новости</h3>
+					<News data={this.state.news} />
+				</React.Fragment>
+			);
+		}
+
+	}
+
+	ReactDOM.render(
+		<App />,
+		document.getElementById('root')
+	);
+</script>
+
+</body>
+</html>
