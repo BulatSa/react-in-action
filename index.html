@@ -204,7 +204,8 @@
 				id: +new Date(),
 				author: inputValue,
 				text: textareaValue,
-				bigText: textareaFullValue});
+				bigText: textareaFullValue
+			});
 		};
 
 		onChangeCheckbox = (e) => {
@@ -266,7 +267,7 @@
 		}
 	}
 
-	Add.PropTypes = {
+	Add.propTypes = {
 		onAddNews: PropTypes.func.isRequired
 	};
 
